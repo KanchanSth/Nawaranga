@@ -1,10 +1,11 @@
-﻿using Nawaranga.Data.Enum;
+﻿using Nawaranga.Data.Base;
+using Nawaranga.Data.Enum;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
 
 namespace Nawaranga.Models
 {
-    public class Room
+    public class Room: IEntityBase
     {
         [Key]
         public int Id { get; set; }
@@ -33,7 +34,7 @@ namespace Nawaranga.Models
         [Display(Name = "Room Picture")]
         [Required(ErrorMessage = " Picture is required")]
         public string? PictureURL { get; set; }
-        public List<Room_Guest>? Rooms_Guests { get; set; }
+        
 
 
     }

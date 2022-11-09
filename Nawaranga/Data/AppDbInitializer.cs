@@ -1,4 +1,6 @@
-﻿using Nawaranga.Data.Enum;
+﻿using Microsoft.AspNetCore.Identity;
+using Nawaranga.Data.Enum;
+using Nawaranga.Data.Static;
 using Nawaranga.Models;
 
 namespace Nawaranga.Data
@@ -178,43 +180,60 @@ namespace Nawaranga.Data
                     context.SaveChanges();
                 }
 
-                //Room_Guest
-                if (!context.Rooms_Guests.Any())
+                
+
+
+            }
+        }
+
+
+        public static async Task SeedUsersAndRolesAsync(IApplicationBuilder applicationBuilder)
+        {
+            using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
+            {
+
+                //Roles
+                var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+                if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
+                    await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
+                if (!await roleManager.RoleExistsAsync(UserRoles.User))
+                    await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
+
+                //Users
+                var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                string adminUserEmail = "admin@nawaranga.com";
+
+                var adminUser = await userManager.FindByEmailAsync(adminUserEmail);
+                if (adminUser == null)
                 {
-                    context.Rooms_Guests.AddRange(new List<Room_Guest>()
+                    var newAdminUser = new ApplicationUser()
                     {
-                        new Room_Guest()
-                        {
-                            RoomId = 1,
-                            GuestId = 3
-                        },
-
-                        new Room_Guest()
-                        {
-                            RoomId = 2,
-                            GuestId = 4
-                        },
-
-                        new Room_Guest()
-                        {
-                            RoomId = 4,
-                            GuestId = 1
-                        },
-
-                        new Room_Guest()
-                        {
-                            RoomId = 3,
-                            GuestId = 2
-                        },
-
-                    });
-
-
-                    context.SaveChanges();
-
+                        FullName = "Kanchan Shrestha",
+                        UserName = "kanchan-stha",
+                        Email = adminUserEmail,
+                        EmailConfirmed = true
+                    };
+                    await userManager.CreateAsync(newAdminUser, "Nawaranga@1234");
+                    await userManager.AddToRoleAsync(newAdminUser, UserRoles.Admin);
                 }
 
 
+                string appUserEmail = "user@gmail.com";
+
+                var appUser = await userManager.FindByEmailAsync(appUserEmail);
+                if (appUser == null)
+                {
+                    var newAppUser = new ApplicationUser()
+                    {
+                        FullName = "Application User",
+                        UserName = "app-user",
+                        Email = appUserEmail,
+                        EmailConfirmed = true
+                    };
+                    await userManager.CreateAsync(newAppUser, "User@12345");
+                    await userManager.AddToRoleAsync(newAppUser, UserRoles.User);
+                }
             }
         }
     }
